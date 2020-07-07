@@ -12,6 +12,8 @@ namespace SoundScheduler
 {
     public partial class MainForm : Form
     {
+        List<string> endTimeValues = new List<string>();
+
         public MainForm()
         {
             InitializeComponent();
@@ -20,6 +22,11 @@ namespace SoundScheduler
         private void MainForm_Load(object sender, EventArgs e)
         {
             eventsDateTimePicker.Value = DateTime.Now;
+            startTimeCmb.SelectedIndex = 0;
+            numberCmb.SelectedIndex = 0;
+            endTimeCmb.Enabled = false;
+            numberCmb.Enabled = false;
+            startCreateNewEventsBtn.Enabled = false;
         }
 
         private void eventsDateTimePicker_ValueChanged(object sender, EventArgs e)
@@ -36,6 +43,31 @@ namespace SoundScheduler
                                                         x.Sound.SoundFileName,
                                                         x.IsEnabled
                                                     }).ToList();
+        }
+
+        private void startTimeCmb_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (startTimeCmb.SelectedIndex == 0) 
+                return;
+
+            endTimeCmb.Items.Clear();
+
+            var selectedValue = int.Parse(startTimeCmb.SelectedItem.ToString().Substring(0, 2));
+
+            for (int i = selectedValue + 1; i <= 23; i++ )
+            {
+                if(i < 10)
+                    endTimeCmb.Items.Add("0" + i + ":00");
+                else
+                    endTimeCmb.Items.Add(i + ":00");
+            }
+            endTimeCmb.Enabled = true;
+            numberCmb.Enabled = true;
+        }
+
+        private void endTimeCmb_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            startCreateNewEventsBtn.Enabled = true;
         }
     }
 }
