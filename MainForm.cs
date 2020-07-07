@@ -16,5 +16,26 @@ namespace SoundScheduler
         {
             InitializeComponent();
         }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            eventsDateTimePicker.Value = DateTime.Now;
+        }
+
+        private void eventsDateTimePicker_ValueChanged(object sender, EventArgs e)
+        {
+            var soundEventsModel = new SoundEventsEntities();
+
+            var soundEventsList = soundEventsModel.SoundEvents
+                                        .Where(s => s.TimeStamp.Value.Day == eventsDateTimePicker.Value.Day).ToList();
+
+            soundEventsDataGridView.DataSource = soundEventsList
+                                                    .Select(x => new
+                                                    {
+                                                        x.TimeStamp,
+                                                        x.Sound.SoundFileName,
+                                                        x.IsEnabled
+                                                    }).ToList();
+        }
     }
 }

@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="SoundEventsModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="SoundEvents">
+          <Key>
+            <PropertyRef Name="SoundEventID" />
+          </Key>
+          <Property Name="SoundEventID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SoundID" Type="int" Nullable="false" />
+          <Property Name="TimeStamp" Type="datetime" />
+          <Property Name="IsEnabled" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SoundLogs">
+          <Key>
+            <PropertyRef Name="SoundLogID" />
+          </Key>
+          <Property Name="SoundLogID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TimeStamp" Type="datetime" />
+          <Property Name="SoundID" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Sounds">
+          <Key>
+            <PropertyRef Name="SoundID" />
+          </Key>
+          <Property Name="SoundID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SoundFileName" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <Association Name="FK_SoundEvents_Sounds">
+          <End Role="Sounds" Type="Self.Sounds" Multiplicity="1" />
+          <End Role="SoundEvents" Type="Self.SoundEvents" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sounds">
+              <PropertyRef Name="SoundID" />
+            </Principal>
+            <Dependent Role="SoundEvents">
+              <PropertyRef Name="SoundID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SoundLogs_Sounds">
+          <End Role="Sounds" Type="Self.Sounds" Multiplicity="1" />
+          <End Role="SoundLogs" Type="Self.SoundLogs" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sounds">
+              <PropertyRef Name="SoundID" />
+            </Principal>
+            <Dependent Role="SoundLogs">
+              <PropertyRef Name="SoundID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SoundEventsModelStoreContainer">
+          <EntitySet Name="SoundEvents" EntityType="Self.SoundEvents" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SoundLogs" EntityType="Self.SoundLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Sounds" EntityType="Self.Sounds" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_SoundEvents_Sounds" Association="Self.FK_SoundEvents_Sounds">
+            <End Role="Sounds" EntitySet="Sounds" />
+            <End Role="SoundEvents" EntitySet="SoundEvents" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SoundLogs_Sounds" Association="Self.FK_SoundLogs_Sounds">
+            <End Role="Sounds" EntitySet="Sounds" />
+            <End Role="SoundLogs" EntitySet="SoundLogs" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="SoundEventsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="SoundEvent">
+          <Key>
+            <PropertyRef Name="SoundEventID" />
+          </Key>
+          <Property Name="SoundEventID" Type="Int32" Nullable="false" />
+          <Property Name="SoundID" Type="Int32" Nullable="false" />
+          <Property Name="TimeStamp" Type="DateTime" Precision="3" />
+          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="Sound" Relationship="Self.FK_SoundEvents_Sounds" FromRole="SoundEvents" ToRole="Sounds" />
+        </EntityType>
+        <EntityType Name="SoundLog">
+          <Key>
+            <PropertyRef Name="SoundLogID" />
+          </Key>
+          <Property Name="SoundLogID" Type="Int32" Nullable="false" />
+          <Property Name="TimeStamp" Type="DateTime" Precision="3" />
+          <Property Name="SoundID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Sound" Relationship="Self.FK_SoundLogs_Sounds" FromRole="SoundLogs" ToRole="Sounds" />
+        </EntityType>
+        <EntityType Name="Sound">
+          <Key>
+            <PropertyRef Name="SoundID" />
+          </Key>
+          <Property Name="SoundID" Type="Int32" Nullable="false" />
+          <Property Name="SoundFileName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="SoundEvents" Relationship="Self.FK_SoundEvents_Sounds" FromRole="Sounds" ToRole="SoundEvents" />
+          <NavigationProperty Name="SoundLogs" Relationship="Self.FK_SoundLogs_Sounds" FromRole="Sounds" ToRole="SoundLogs" />
+        </EntityType>
+        <Association Name="FK_SoundEvents_Sounds">
+          <End Role="Sounds" Type="Self.Sound" Multiplicity="1" />
+          <End Role="SoundEvents" Type="Self.SoundEvent" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sounds">
+              <PropertyRef Name="SoundID" />
+            </Principal>
+            <Dependent Role="SoundEvents">
+              <PropertyRef Name="SoundID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SoundLogs_Sounds">
+          <End Role="Sounds" Type="Self.Sound" Multiplicity="1" />
+          <End Role="SoundLogs" Type="Self.SoundLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Sounds">
+              <PropertyRef Name="SoundID" />
+            </Principal>
+            <Dependent Role="SoundLogs">
+              <PropertyRef Name="SoundID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SoundEventsEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="SoundEvents" EntityType="Self.SoundEvent" />
+          <EntitySet Name="SoundLogs" EntityType="Self.SoundLog" />
+          <EntitySet Name="Sounds" EntityType="Self.Sound" />
+          <AssociationSet Name="FK_SoundEvents_Sounds" Association="Self.FK_SoundEvents_Sounds">
+            <End Role="Sounds" EntitySet="Sounds" />
+            <End Role="SoundEvents" EntitySet="SoundEvents" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SoundLogs_Sounds" Association="Self.FK_SoundLogs_Sounds">
+            <End Role="Sounds" EntitySet="Sounds" />
+            <End Role="SoundLogs" EntitySet="SoundLogs" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="SoundEventsModelStoreContainer" CdmEntityContainer="SoundEventsEntities">
+          <EntitySetMapping Name="SoundEvents">
+            <EntityTypeMapping TypeName="SoundEventsModel.SoundEvent">
+              <MappingFragment StoreEntitySet="SoundEvents">
+                <ScalarProperty Name="SoundEventID" ColumnName="SoundEventID" />
+                <ScalarProperty Name="SoundID" ColumnName="SoundID" />
+                <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SoundLogs">
+            <EntityTypeMapping TypeName="SoundEventsModel.SoundLog">
+              <MappingFragment StoreEntitySet="SoundLogs">
+                <ScalarProperty Name="SoundLogID" ColumnName="SoundLogID" />
+                <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+                <ScalarProperty Name="SoundID" ColumnName="SoundID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Sounds">
+            <EntityTypeMapping TypeName="SoundEventsModel.Sound">
+              <MappingFragment StoreEntitySet="Sounds">
+                <ScalarProperty Name="SoundID" ColumnName="SoundID" />
+                <ScalarProperty Name="SoundFileName" ColumnName="SoundFileName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
