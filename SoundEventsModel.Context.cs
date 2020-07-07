@@ -28,5 +28,10 @@ namespace SoundScheduler
         public virtual DbSet<SoundEvent> SoundEvents { get; set; }
         public virtual DbSet<SoundLog> SoundLogs { get; set; }
         public virtual DbSet<Sound> Sounds { get; set; }
+
+        internal object Entry<T>(DbSet<SoundEvent> latestEvents)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

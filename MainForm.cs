@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -76,6 +77,8 @@ namespace SoundScheduler
         {
             InvokeMethodThreaded(new Action(() =>
             {
+                DeleteOldEntriesForDate(newEventsDateTimePicker.Value);
+
                 Random seed = new Random();
 
                 int selectedStartTime = 0;
@@ -113,12 +116,13 @@ namespace SoundScheduler
 
                     for (int j = 0; j < timeEvents.Count; j++)
                     {
+                        var soundToPlay = seed.Next(1, 6);
                         var dateTimeToAdd = new DateTime(   newEventsDateTimePicker.Value.Year, 
                                                             newEventsDateTimePicker.Value.Month, 
                                                             newEventsDateTimePicker.Value.Day, 
                                                             i, timeEvents[j], 0);
 
-                        var newEventToAdd = new SoundEvent { IsEnabled = true, SoundID = 1, TimeStamp = dateTimeToAdd };
+                        var newEventToAdd = new SoundEvent { IsEnabled = true, SoundID = soundToPlay, TimeStamp = dateTimeToAdd };
                         soundEventsModel.SoundEvents.Add(newEventToAdd);
                     }
                 }
@@ -126,6 +130,7 @@ namespace SoundScheduler
                 try
                 {
                     soundEventsModel.SaveChanges();
+                    soundEventsModel = new SoundEventsEntities();
                 }
                 catch (Exception ex)
                 {
@@ -138,6 +143,19 @@ namespace SoundScheduler
                 }));
 
             }));
+        }
+
+        private void DeleteOldEntriesForDate(DateTime dateToDeleteFor)
+        {
+            var entriesToDelete = soundEventsModel.SoundEvents.Where(s => s.TimeStamp.Value.Year == dateToDeleteFor.Year
+                                                                     && s.TimeStamp.Value.Month == dateToDeleteFor.Month
+                                                                     && s.TimeStamp.Value.Day == dateToDeleteFor.Day).ToList();
+            foreach(var entryToDelete in entriesToDelete)
+            {
+                soundEventsModel.SoundEvents.Remove(entryToDelete);
+            }
+            soundEventsModel.SaveChanges();
+            soundEventsModel = new SoundEventsEntities();
         }
 
         private void InvokeMethodThreaded(Action actionToExecute)
@@ -154,6 +172,16 @@ namespace SoundScheduler
         private void InvokeUIThreadAction(Action actionToExecute)
         {
             this.BeginInvoke(new InvokeDelegate(actionToExecute));
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var AppPath = Environment.CurrentDirectory;
+
+            var filePath = AppPath + @"\Resources\1.wav";
+
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer(filePath);
+            player.Play();
         }
     }
 }
