@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -12,6 +13,9 @@ namespace SoundScheduler
 {
     public partial class MainForm : Form
     {
+        SoundEventsEntities soundEventsModel = new SoundEventsEntities();
+        public delegate void InvokeDelegate();
+        
         List<string> endTimeValues = new List<string>();
 
         public MainForm()
@@ -31,10 +35,8 @@ namespace SoundScheduler
 
         private void eventsDateTimePicker_ValueChanged(object sender, EventArgs e)
         {
-            var soundEventsModel = new SoundEventsEntities();
-
             var soundEventsList = soundEventsModel.SoundEvents
-                                        .Where(s => s.TimeStamp.Value.Day == eventsDateTimePicker.Value.Day).ToList();
+                                        .Where(s => s.TimeStamp.Value.Day == eventsDateTimePicker.Value.Day).OrderBy(o => o.TimeStamp).ToList();
 
             soundEventsDataGridView.DataSource = soundEventsList
                                                     .Select(x => new
@@ -68,6 +70,90 @@ namespace SoundScheduler
         private void endTimeCmb_SelectedIndexChanged(object sender, EventArgs e)
         {
             startCreateNewEventsBtn.Enabled = true;
+        }
+
+        private void startCreateNewEventsBtn_Click(object sender, EventArgs e)
+        {
+            InvokeMethodThreaded(new Action(() =>
+            {
+                Random seed = new Random();
+
+                int selectedStartTime = 0;
+                int selectedEndTime = 0;
+                int selectedNumberPer = 0;
+
+                InvokeUIThreadAction(new Action(() =>
+                {
+                    selectedStartTime = int.Parse(startTimeCmb.SelectedItem.ToString().Substring(0, 2));
+                    selectedEndTime = int.Parse(endTimeCmb.SelectedItem.ToString().Substring(0, 2));
+                    selectedNumberPer = int.Parse(numberCmb.SelectedItem.ToString());
+                }));
+
+                do
+                {
+                    Thread.Sleep(50);
+                } while (selectedNumberPer == 0);
+
+                for (int i = selectedStartTime; i < selectedEndTime; i++)
+                {
+                    List<int> timeEvents = new List<int>();
+
+                    for (int j = 1; j <= selectedNumberPer; j++)
+                    {
+                        int minuteValue = 0;
+                        do
+                        {
+                            minuteValue = seed.Next(1, 60);
+
+                        } while (timeEvents.Contains(minuteValue));
+
+                        timeEvents.Add(minuteValue);
+
+                    }
+
+                    for (int j = 0; j < timeEvents.Count; j++)
+                    {
+                        var dateTimeToAdd = new DateTime(   newEventsDateTimePicker.Value.Year, 
+                                                            newEventsDateTimePicker.Value.Month, 
+                                                            newEventsDateTimePicker.Value.Day, 
+                                                            i, timeEvents[j], 0);
+
+                        var newEventToAdd = new SoundEvent { IsEnabled = true, SoundID = 1, TimeStamp = dateTimeToAdd };
+                        soundEventsModel.SoundEvents.Add(newEventToAdd);
+                    }
+                }
+
+                try
+                {
+                    soundEventsModel.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                InvokeUIThreadAction(new Action(() =>
+                {
+                    eventsDateTimePicker.Value = newEventsDateTimePicker.Value;
+                }));
+
+            }));
+        }
+
+        private void InvokeMethodThreaded(Action actionToExecute)
+        {
+            Thread t = new Thread(delegate ()
+            {
+                this.BeginInvoke(new InvokeDelegate(new Action(() => this.Enabled = false)));
+                actionToExecute();
+                this.BeginInvoke(new InvokeDelegate(new Action(() => this.Enabled = true)));
+            });
+            t.Start();
+        }
+
+        private void InvokeUIThreadAction(Action actionToExecute)
+        {
+            this.BeginInvoke(new InvokeDelegate(actionToExecute));
         }
     }
 }

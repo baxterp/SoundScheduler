@@ -109,6 +109,7 @@
             this.startCreateNewEventsBtn.TabIndex = 8;
             this.startCreateNewEventsBtn.Text = "Create New Events";
             this.startCreateNewEventsBtn.UseVisualStyleBackColor = true;
+            this.startCreateNewEventsBtn.Click += new System.EventHandler(this.startCreateNewEventsBtn_Click);
             // 
             // label5
             // 
