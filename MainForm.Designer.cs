@@ -48,11 +48,14 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.rtbMessages = new System.Windows.Forms.RichTextBox();
             this.btnPlaySelectedRowSound = new System.Windows.Forms.Button();
+            this.gbClearData = new System.Windows.Forms.GroupBox();
+            this.btnDeleteAllData = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.soundEventsDataGridView)).BeginInit();
             this.gbSelectDate.SuspendLayout();
             this.gbCreateNewEvents.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            this.gbClearData.SuspendLayout();
             this.SuspendLayout();
             // 
             // soundEventsDataGridView
@@ -236,7 +239,7 @@
             this.groupBox3.Controls.Add(this.btnStartSheduler);
             this.groupBox3.Location = new System.Drawing.Point(23, 27);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(564, 151);
+            this.groupBox3.Size = new System.Drawing.Size(462, 151);
             this.groupBox3.TabIndex = 5;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Shedule Events";
@@ -290,11 +293,32 @@
             this.btnPlaySelectedRowSound.UseVisualStyleBackColor = true;
             this.btnPlaySelectedRowSound.Click += new System.EventHandler(this.btnPlaySelectedRowSound_Click);
             // 
+            // gbClearData
+            // 
+            this.gbClearData.Controls.Add(this.btnDeleteAllData);
+            this.gbClearData.Location = new System.Drawing.Point(506, 27);
+            this.gbClearData.Name = "gbClearData";
+            this.gbClearData.Size = new System.Drawing.Size(172, 151);
+            this.gbClearData.TabIndex = 7;
+            this.gbClearData.TabStop = false;
+            this.gbClearData.Text = "Delete ALL Events data";
+            // 
+            // btnDeleteAllData
+            // 
+            this.btnDeleteAllData.Location = new System.Drawing.Point(18, 42);
+            this.btnDeleteAllData.Name = "btnDeleteAllData";
+            this.btnDeleteAllData.Size = new System.Drawing.Size(134, 58);
+            this.btnDeleteAllData.TabIndex = 0;
+            this.btnDeleteAllData.Text = "Delete Data";
+            this.btnDeleteAllData.UseVisualStyleBackColor = true;
+            this.btnDeleteAllData.Click += new System.EventHandler(this.btnDeleteAllData_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1116, 631);
+            this.Controls.Add(this.gbClearData);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.gbCreateNewEvents);
@@ -303,6 +327,7 @@
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "Sound Scheduler";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.soundEventsDataGridView)).EndInit();
             this.gbSelectDate.ResumeLayout(false);
@@ -311,6 +336,7 @@
             this.gbCreateNewEvents.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
+            this.gbClearData.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -337,6 +363,8 @@
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.RichTextBox rtbMessages;
         private System.Windows.Forms.Button btnPlaySelectedRowSound;
+        private System.Windows.Forms.GroupBox gbClearData;
+        private System.Windows.Forms.Button btnDeleteAllData;
     }
 }
 

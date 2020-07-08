@@ -21,7 +21,7 @@ namespace SoundScheduler
         private delegate void InvokeDelegate();
         private System.Timers.Timer eventsTimer;
         private string baseResourceLocation = Environment.CurrentDirectory + @"\Resources\";
-        private int timerFrequency = 60000;
+        private readonly int timerFrequency = 60000;
         private System.Media.SoundPlayer player = null;
         private string filenameToPlay = string.Empty;
 
@@ -50,7 +50,8 @@ namespace SoundScheduler
         private void eventsDateTimePicker_ValueChanged(object sender, EventArgs e)
         {
             var soundEventsList = soundEventsModel.SoundEvents
-                                        .Where(s => s.TimeStamp.Value.Day == eventsDateTimePicker.Value.Day).OrderBy(o => o.TimeStamp).ToList();
+                                        .Where(s => s.TimeStamp.Value.Day == eventsDateTimePicker.Value.Day)
+                                        .OrderBy(o => o.TimeStamp).ToList();
 
             soundEventsDataGridView.DataSource = soundEventsList
                                                     .Select(x => new
@@ -165,6 +166,7 @@ namespace SoundScheduler
             {
                 gbCreateNewEvents.Enabled = false;
                 gbSelectDate.Enabled = false;
+                gbClearData.Enabled = false;
                 btnStartSheduler.Enabled = false;
             }));
 
@@ -186,16 +188,17 @@ namespace SoundScheduler
                                                     FileNameToPlay = s.Sound.SoundFileName
                                                 }).ToList();
 
-                SendLogMessage("Events timer STARTED successfully");
+                SendLogMessageScreenOnly("Events timer STARTED successfully");
             }
             catch (Exception ex)
             {
-                SendLogMessage("Problem starting events timer: " + ex.Message);
+                SendLogMessageScreenOnly("Problem starting events timer: " + ex.Message);
 
                 InvokeUIThreadAction(new Action(() =>
                 {
                     gbCreateNewEvents.Enabled = true;
                     gbSelectDate.Enabled = true;
+                    gbClearData.Enabled = true;
                     btnStartSheduler.Enabled = true;
                 }));
             }
@@ -206,19 +209,77 @@ namespace SoundScheduler
             try
             {
                 eventsTimer.Stop();
-                SendLogMessage("Events timer STOPPED successfully");
+                SendLogMessageScreenOnly("Events timer STOPPED successfully");
             }
             catch (Exception ex)
             {
-                SendLogMessage("Problem stopping events timer: " + ex.Message);
+                SendLogMessageScreenOnly("Problem stopping events timer: " + ex.Message);
             }
 
             InvokeUIThreadAction(new Action(() =>
             {
                 gbCreateNewEvents.Enabled = true;
                 gbSelectDate.Enabled = true;
+                gbClearData.Enabled = true;
                 btnStartSheduler.Enabled = true;
             }));
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(eventsTimer != null)
+            {
+                eventsTimer.Stop();
+                eventsTimer.Close();
+            }
+        }
+
+
+        private void soundEventsDataGridView_SelectionChanged(object sender, EventArgs e)
+        {
+            btnPlaySelectedRowSound.Enabled = false;
+
+            var rowsCount = soundEventsDataGridView.SelectedRows.Count;
+            if (rowsCount == 0 || rowsCount > 1) return;
+
+            var row = soundEventsDataGridView.SelectedRows[0];
+            if (row == null) return;
+
+            var filename = row.Cells[1].Value.ToString();
+
+            filenameToPlay = filename;
+
+            btnPlaySelectedRowSound.Enabled = true;
+        }
+
+        private void btnPlaySelectedRowSound_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(filenameToPlay))
+            {
+                PlaySound(baseResourceLocation + filenameToPlay);
+            }
+        }
+
+        private void btnDeleteAllData_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DialogResult dialogResult = MessageBox.Show("Are you sure ?", "WARNING", MessageBoxButtons.YesNo);
+
+                if (dialogResult != DialogResult.Yes)
+                    return;
+
+                soundEventsModel.Database.ExecuteSqlCommand("usp_DeleteAllData", new object[0]);
+
+                var currentDateTimeValue = eventsDateTimePicker.Value;
+                eventsDateTimePicker.Value = new DateTime(2001, 12, 12);
+                eventsDateTimePicker.Value = currentDateTimeValue;
+            }
+            catch (Exception ex)
+            {
+                SendLogMessage("Error deleting Events data, message : " + ex.Message);
+            }
+
         }
 
         #endregion
@@ -253,8 +314,7 @@ namespace SoundScheduler
 
             if (!messageSent)
             {
-                SendLogMessage("No sound to play during timer event @ " + DateTime.Now.ToString("dd MMMM HH:mm"));
-                messageSent = true;
+                SendLogMessageScreenOnly("No sound to play during timer event @ " + DateTime.Now.ToString("dd MMMM HH:mm"));
             }
         }
 
@@ -263,12 +323,16 @@ namespace SoundScheduler
             var entriesToDelete = soundEventsModel.SoundEvents.Where(s => s.TimeStamp.Value.Year == dateToDeleteFor.Year
                                                                      && s.TimeStamp.Value.Month == dateToDeleteFor.Month
                                                                      && s.TimeStamp.Value.Day == dateToDeleteFor.Day).ToList();
-            foreach(var entryToDelete in entriesToDelete)
+
+            if (entriesToDelete != null && entriesToDelete.Count > 0)
             {
-                soundEventsModel.SoundEvents.Remove(entryToDelete);
+                foreach (var entryToDelete in entriesToDelete)
+                {
+                    soundEventsModel.SoundEvents.Remove(entryToDelete);
+                }
+                soundEventsModel.SaveChanges();
+                soundEventsModel = new SoundEventsEntities();
             }
-            soundEventsModel.SaveChanges();
-            soundEventsModel = new SoundEventsEntities();
         }
 
         private void InvokeMethodThreaded(Action actionToExecute)
@@ -310,32 +374,16 @@ namespace SoundScheduler
             }));
         }
 
-        #endregion
-
-        private void soundEventsDataGridView_SelectionChanged(object sender, EventArgs e)
+        private void SendLogMessageScreenOnly(string messageToDisplay)
         {
-            btnPlaySelectedRowSound.Enabled = false;
-
-            var rowsCount = soundEventsDataGridView.SelectedRows.Count;
-            if (rowsCount == 0 || rowsCount > 1) return;
-
-            var row = soundEventsDataGridView.SelectedRows[0];
-            if (row == null) return;
-
-            var filename = row.Cells[1].Value.ToString();
-
-            filenameToPlay = filename;
-
-            btnPlaySelectedRowSound.Enabled = true;
-        }
-
-        private void btnPlaySelectedRowSound_Click(object sender, EventArgs e)
-        {
-            if(!string.IsNullOrEmpty(filenameToPlay))
+            InvokeUIThreadAction(new Action(() =>
             {
-                PlaySound(baseResourceLocation +  filenameToPlay);
-            }
+                rtbMessages.AppendText("> " + messageToDisplay + Environment.NewLine);
+                rtbMessages.ScrollToCaret();
+            }));
         }
+
+        #endregion
     }
 
     public class ScheduledEventsData
